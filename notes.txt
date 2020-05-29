@@ -1,0 +1,29 @@
+Foundations is a programming language with syntax
+similar to C/C++ with a few other reserved keywords
+to control the garbage collector associated with it.
+
+Statements like 
+
+int X[5];
+MyType my_struct = { 0, 1, 8 };
+DynStruct *dynamic = new DynStruct;
+
+have very close analogies to C/C++.
+
+However, there may be a few new keywords to
+control garbage collector.
+
+However, a statement like
+
+DynStruct *gc_dynamic = gc DynStruct;
+
+allocates gc_dynamic on a garbage collected heap.
+
+This implies that implementations must support
+the illusion of 2 sub-heaps. One for the native heaps, and
+one for garbage collected heaps.
+
+As to whether there are actually 2 sub-heaps can either
+be determined by the compiler, or may be enforced by some
+syntax like "int gc EntryPoint() { /* code here */ }". We'll see.
+
