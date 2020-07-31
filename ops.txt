@@ -1,0 +1,15 @@
+<<=	OP_LS_ASGN
+>>=	OP_RS_ASGN
+<<	OP_LS
+>>	OP_RS
+++	OP_INC
+--	OP_DEC
++=	OP_ADD_ASGN
+-=	OP_SUB_ASGN
+*=	OP_MUL_ASGN
+/=	OP_DIV_ASGN
+<=	OP_LE
+>=	OP_GE
+&&	OP_LOGAND
+||	OP_LOGOR
+
