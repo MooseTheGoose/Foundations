@@ -1,29 +1,30 @@
-Foundations is a programming language with syntax
-similar to C/C++ with a few other reserved keywords
-to control the garbage collector associated with it.
+# Trigger garbage collector
+collect
 
-Statements like 
+# Create a new reference to array of char named X
+char [X] = alloc char[128]
 
-int X[5];
-MyType my_struct = { 0, 1, 8 };
-DynStruct *dynamic = new DynStruct;
+# Access element 20 of X above
+[X + 20]
 
-have very close analogies to C/C++.
+# Declare a pointer to char named Y
+char *Y = alloc char[128]
 
-However, there may be a few new keywords to
-control garbage collector.
+# Free natively allocated space
+dealloc Y
 
-However, a statement like
+# Create a new reference to array of pointers to references of type char
+char [*[Z]] = alloc char *[][128]
 
-DynStruct *gc_dynamic = gc DynStruct;
+# You can do stuff like this... No one will like you if you do.
+char [[*[**[W]]]] = alloc char[*[**[]]] [128]
 
-allocates gc_dynamic on a garbage collected heap.
+# [ W + 14 ] : [*[**[]]]
+# [ [ W + 14 ] ] + 20 = A : *[**[]]
+# A[20] = B : [**[]]
+# [ B + 18 ] = C : **[]
+# **C = D : []
+# [ D + 14 ] : char
 
-This implies that implementations must support
-the illusion of 2 sub-heaps. One for the native heaps, and
-one for garbage collected heaps.
-
-As to whether there are actually 2 sub-heaps can either
-be determined by the compiler, or may be enforced by some
-syntax like "int gc EntryPoint() { /* code here */ }". We'll see.
+[ **[ ([ [ W + 14 ] ] + 20)[20]  + 18 ] + 14 ]
 
