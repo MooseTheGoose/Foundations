@@ -33,11 +33,11 @@ static gcofs_t agg_table[] =
 
   /* gc_ll */
   3,
-  0, 8, 16,
+  0, sizeof(void *), 2 * sizeof(void *),
 
   /* gc_tree */
   5,
-  0, 8, 16, 24, 32
+  0, sizeof(void *), 2 * sizeof(void *), 3 * sizeof(void *), 4 * sizeof(void *)
 };
 
 #define HEAP_SZ (1 << 20)
@@ -73,9 +73,9 @@ void *gc_create_ref(gclen_t len, gcofs_t atptr, int flags)
       retmeta->mark = 0;
       retmeta->sweeped = 0;
       if(flags & ROOT_FLAG) 
-      { retmeta->rrcnt = 1; retmeta->orcnt = 0; }
+      { retmeta->rrcnt = 1; }
       else
-      { retmeta->rrcnt = 0; retmeta->orcnt = 1; }
+      { retmeta->rrcnt = 0; }
       if(flags & REFARRAY_FLAG) { retmeta->refarray = 0; }
       memset(retmeta + 1, 0, true_len);
 
@@ -98,9 +98,9 @@ void *gc_create_ref(gclen_t len, gcofs_t atptr, int flags)
       retmeta->mark = 0;
       retmeta->sweeped = 0;
       if(flags & ROOT_FLAG) 
-      { retmeta->rrcnt = 1; retmeta->orcnt = 0; }
+      { retmeta->rrcnt = 1; }
       else
-      { retmeta->rrcnt = 0; retmeta->orcnt = 1; }
+      { retmeta->rrcnt = 0; }
       if(flags & REFARRAY_FLAG) { retmeta->refarray = 0; }
       memset(retmeta + 1, 0, true_len);
 
@@ -117,9 +117,9 @@ void *gc_create_ref(gclen_t len, gcofs_t atptr, int flags)
       begin->mark = 0;
       begin->sweeped = 0;
       if(flags & ROOT_FLAG) 
-      { begin->rrcnt = 1; begin->orcnt = 0; }
+      { begin->rrcnt = 1; }
       else
-      { begin->rrcnt = 0; begin->orcnt = 1; }
+      { begin->rrcnt = 0; }
       if(flags & REFARRAY_FLAG) { begin->refarray = 0; }
       memset(begin + 1, 0, true_len);
 
@@ -134,58 +134,22 @@ void gc_destroy_ref(void *alloc)
 {
   gc_meta *metadata = ((gc_meta *)alloc) - 1;
 
-  if(metadata->sweeped) { return; }
-  metadata->sweeped = 1;
-
   if(metadata->prev) 
   { metadata->prev->next = metadata->next; }
   if(metadata->next)
   { metadata->next->prev = metadata->prev; }
 
   if(metadata == begin) { begin = metadata->next; }
-
-  if(metadata->refarray) 
-  {
-    for(int i = 0; 
-        i < (metadata->len - sizeof(gc_meta)) / sizeof(void *); 
-        i += sizeof(void *))
-      {
-        void *ref = ((void **)alloc)[i];
-
-        if(ref) 
-        { gc_dec_ref(ref, 0); }
-      }
-  }
-  else
-  {
-    gcofs_t nchildren = agg_table[metadata->atptr];
-    for(gcofs_t i = metadata->atptr + 1; nchildren--; i++)
-    {
-      void *ref = *(void **)((char *)alloc + agg_table[i]);
-
-      if(ref)
-      { gc_dec_ref(ref, 0); }
-    } 
-  }
 }
 
-void gc_dec_ref(void *alloc, int root_deref)
+void gc_dec_ref(void *alloc)
 {
-  gc_meta *metadata = ((gc_meta *)alloc) - 1;
-  
-  if(root_deref) { metadata->rrcnt--; }  
-  else { metadata->orcnt--; }
-
-  if(metadata->rrcnt <= 0 && metadata->orcnt <= 0)
-  {
-    gc_destroy_ref(alloc);
-  }
+  ((gc_meta *)alloc)[-1].rrcnt--;
 }
 
-void gc_inc_ref(void *alloc, int root_ref)
+void gc_inc_ref(void *alloc)
 {
-  if(root_ref) { ((gc_meta *)alloc)[-1].rrcnt++; }
-  else         { ((gc_meta *)alloc)[-1].orcnt++; }
+  ((gc_meta *)alloc)[-1].rrcnt++;
 }
 
 void gc_collect()
@@ -195,7 +159,7 @@ void gc_collect()
   /* Use tracing to handle cyclic references */
   for(gc_meta *trail = begin; trail; trail = trail->next)
   { 
-    printf("%p: %lld %lld\n", trail, trail->rrcnt, trail->orcnt);
+    printf("%p: %lld\n", trail, trail->rrcnt);
     if(trail->rrcnt > 0 && !trail->mark)
     {
       trail->mark = 1;
@@ -205,20 +169,37 @@ void gc_collect()
       while(rem.size())
       {
         gc_meta *current = rem.back();
+        void *base = current + 1;
         rem.pop_back();
 
-        gcofs_t nchildren = agg_table[current->atptr];
-        for(gcofs_t i = current->atptr + 1; nchildren--; i++)
+        if(current->refarray)
         {
-          gc_meta *meta = *(gc_meta **)((char *)current + 
-                                        sizeof(gc_meta) + 
-                                        agg_table[i]);
-          if(meta)
+          for(int i = 0; 
+              i < (current->len - sizeof(gc_meta)) / sizeof(void *); 
+              i += sizeof(void *))
           {
-            meta--;
-            rem.push_back(meta);
-            meta->mark = 1;
+            gc_meta *meta = ((gc_meta **)base)[i];
+
+            if(meta && !meta->mark) 
+            { 
+              rem.push_back(meta); 
+              meta->mark = 1; 
+            }
           }
+        }
+        else
+        {
+          gcofs_t nchildren = agg_table[current->atptr];
+          for(gcofs_t i = current->atptr + 1; nchildren--; i++)
+          {
+            gc_meta *meta = *(gc_meta **)((char *)base + agg_table[i]);
+
+            if(meta-- && !meta->mark)
+            {
+              meta->mark = 1;
+              rem.push_back(meta);
+            }
+          } 
         }
       }
     } 
@@ -240,20 +221,10 @@ int main()
   gc_ll *my_ref = (gc_ll *)gc_create_ref(sizeof (gc_ll), 1, ROOT_FLAG);
   gc_ll *my_ref1 = (gc_ll *)gc_create_ref(sizeof (gc_ll), 1, 0);
 
-  for(gc_meta *trail = begin; trail; trail = trail->next)
-  { printf("%p ", trail); } printf("\n");
-
   my_ref->next = my_ref1;
   my_ref1->prev = my_ref;
-  gc_inc_ref(my_ref, 0);
-  gc_dec_ref(my_ref, ROOT_FLAG);
-
-  printf("%p %p\n", (gc_meta *)my_ref - 1, (gc_meta *)my_ref1 - 1);
 
   gc_collect();
-
-  for(gc_meta *trail = begin; trail; trail = trail->next)
-  { printf("%p\n", trail); }
   
   return 0; 
 }
