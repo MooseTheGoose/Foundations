@@ -16,7 +16,6 @@ struct gc_meta
 {
   gcrcnt_t rrcnt : 60;  /* Roots Reference count */
   gcrcnt_t mark : 1;    /* Mark-sweep as back-up */
-  gcrcnt_t sweeped : 1;
   gcrcnt_t refarray : 1; /* Is an array of references. */
   gcofs_t  atptr;        /* Aggregate table pointer */ 
   gclen_t len;           /* Length of metadata */

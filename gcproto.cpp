@@ -71,11 +71,8 @@ void *gc_create_ref(gclen_t len, gcofs_t atptr, int flags)
 
       retmeta->atptr = atptr;
       retmeta->mark = 0;
-      retmeta->sweeped = 0;
-      if(flags & ROOT_FLAG) 
-      { retmeta->rrcnt = 1; }
-      else
-      { retmeta->rrcnt = 0; }
+      retmeta->rrcnt = 0;
+      if(flags & ROOT_FLAG) { retmeta->rrcnt = 1; }
       if(flags & REFARRAY_FLAG) { retmeta->refarray = 0; }
       memset(retmeta + 1, 0, true_len);
 
@@ -96,11 +93,8 @@ void *gc_create_ref(gclen_t len, gcofs_t atptr, int flags)
 
       retmeta->atptr = atptr;
       retmeta->mark = 0;
-      retmeta->sweeped = 0;
-      if(flags & ROOT_FLAG) 
-      { retmeta->rrcnt = 1; }
-      else
-      { retmeta->rrcnt = 0; }
+      retmeta->rrcnt = 0;
+      if(flags & ROOT_FLAG) { retmeta->rrcnt = 1; }
       if(flags & REFARRAY_FLAG) { retmeta->refarray = 0; }
       memset(retmeta + 1, 0, true_len);
 
@@ -115,11 +109,8 @@ void *gc_create_ref(gclen_t len, gcofs_t atptr, int flags)
 
       begin->atptr = atptr;
       begin->mark = 0;
-      begin->sweeped = 0;
-      if(flags & ROOT_FLAG) 
-      { begin->rrcnt = 1; }
-      else
-      { begin->rrcnt = 0; }
+      begin->rrcnt = 0;
+      if(flags & ROOT_FLAG) { begin->rrcnt = 1; }
       if(flags & REFARRAY_FLAG) { begin->refarray = 0; }
       memset(begin + 1, 0, true_len);
 
