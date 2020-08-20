@@ -19,16 +19,19 @@ struct gc_tree
   void *data;
 };
 
+struct gc_weak_test
+{ void *data; };
+
 /*
  *  Records of:
  *
- *  1: # of children (n)
+ *  1: # of strong reference children (n)
  *  2-n+1: Children offsets
  */
 
 static gcofs_t agg_table[] = 
 {
-  /* No child references*/
+  /* No child strong references*/
   0,
 
   /* gc_ll */
@@ -40,12 +43,23 @@ static gcofs_t agg_table[] =
   0, sizeof(void *), 2 * sizeof(void *), 3 * sizeof(void *), 4 * sizeof(void *)
 };
 
+/*
+ *  Similar records as above.
+ */
+static gcofs_t weak_table[] = 
+{
+  /* No weak references*/
+  0,
+  /* gc_weak_test */
+  1,
+  0
+};
+
 #define HEAP_SZ (1 << 20)
 static gc_meta *begin;
 static align_t test_heap[HEAP_SZ / sizeof(align_t)];
-static vector<void **> weak_refs = vector<void **>();
 
-void *gc_create_ref(gclen_t len, gcofs_t atptr, int flags)
+void *gc_create_ref(gclen_t len, gcofs_t atptr, gcofs_t wtptr, int flags)
 {
   /* Go through heap and look for space. */
   gclen_t true_len = (len + sizeof(gc_meta) + (sizeof(align_t) - 1)) & 
@@ -71,6 +85,7 @@ void *gc_create_ref(gclen_t len, gcofs_t atptr, int flags)
       trail->next = retmeta;
 
       retmeta->atptr = atptr;
+      retmeta->wtptr = wtptr;
       retmeta->mark = 0;
       retmeta->rrcnt = 0;
       if(flags & ROOT_FLAG) { retmeta->rrcnt = 1; }
@@ -93,6 +108,7 @@ void *gc_create_ref(gclen_t len, gcofs_t atptr, int flags)
       retmeta->prev->next = retmeta;
 
       retmeta->atptr = atptr;
+      retmeta->wtptr = wtptr;
       retmeta->mark = 0;
       retmeta->collected = 0;
       retmeta->rrcnt = 0;
@@ -110,7 +126,9 @@ void *gc_create_ref(gclen_t len, gcofs_t atptr, int flags)
       begin->prev = 0;
 
       begin->atptr = atptr;
+      begin->wtptr = wtptr;
       begin->mark = 0;
+      begin->collected = 0;
       begin->rrcnt = 0;
       if(flags & ROOT_FLAG) { begin->rrcnt = 1; }
       if(flags & REFARRAY_FLAG) { begin->refarray = 0; }
@@ -206,14 +224,17 @@ void gc_collect()
     else { printf("%p\n", trail); gc_destroy_ref(trail + 1); }
   }
 
-  for(int i = weak_refs.size()-1; i >= 0; i--)
+  for(gc_meta *trail = begin; trail; trail = trail->next)
   {
-    void *weak = *(weak_refs[i]);
-    if( ((gc_meta *)weak)[-1].collected )
-    { 
-      *(weak_refs[i]) = 0; 
-      weak_refs[i] = weak_refs.back(); 
-      weak_refs.pop_back();
+    gcofs_t nchildren = weak_table[trail->wtptr];
+    for(gcofs_t i = trail->wtptr + 1; nchildren--; i++)
+    {
+      void **weakref = (void **)((char *)(trail + 1) + weak_table[i]);
+
+      if(*weakref && ((gc_meta *)*weakref)[-1].collected)
+      {
+         *weakref = 0;
+      }
     }
   }
 
@@ -223,10 +244,9 @@ void gc_collect()
 
 int main()
 {
-  gc_ll *my_ref = (gc_ll *)gc_create_ref(sizeof (gc_ll), 1, 0);
-  gc_ll *my_ref1 = (gc_ll *)gc_create_ref(sizeof (gc_ll), 1, 0);
-  void **my_ref2 = (void **)gc_create_ref(sizeof(void *), 0, ROOT_FLAG);  // Introduce weak reference
-  weak_refs.push_back(my_ref2);
+  gc_ll *my_ref = (gc_ll *)gc_create_ref(sizeof (gc_ll), 1, 0, 0);
+  gc_ll *my_ref1 = (gc_ll *)gc_create_ref(sizeof (gc_ll), 1, 0, 0);
+  void **my_ref2 = (void **)gc_create_ref(sizeof(void *), 0, 1, ROOT_FLAG);  // Introduce weak reference
 
   my_ref->next = my_ref1;
   my_ref1->prev = my_ref;

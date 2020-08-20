@@ -1,14 +1,18 @@
 # Trigger garbage collector
 collect
 
-# Create a new weak reference to array of char named X
-char [X] = alloc char[128]
-
 # Create a new strong reference to an int named strawng
-strong int [strawng] = alloc int;
+int [strawng] = alloc strong int;
 
-# Access element 20 of X above
-[X + 20]
+# Create a new weak reference in array of references X.
+char [[X]] = alloc strong char[][128]; X[0] = alloc char[256];
+
+# Note that this is illegal.
+# Weak references must be children to references (strong or weak).
+char [X] = alloc char[128];
+
+# Access element 20 of strawng above
+[strawng + 20]
 
 # Declare a pointer to char named Y
 char *Y = alloc char[128]
