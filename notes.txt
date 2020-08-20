@@ -1,8 +1,11 @@
 # Trigger garbage collector
 collect
 
-# Create a new reference to array of char named X
+# Create a new weak reference to array of char named X
 char [X] = alloc char[128]
+
+# Create a new strong reference to an int named strawng
+strong int [strawng] = alloc int;
 
 # Access element 20 of X above
 [X + 20]
@@ -13,18 +16,23 @@ char *Y = alloc char[128]
 # Free natively allocated space
 dealloc Y
 
-# Create a new reference to array of pointers to references of type char
-char [*[Z]] = alloc char *[][128]
+# Note that these are illegal
+# To keep gc simple, accessing a reference through pointer indirection is illegal.
 
-# You can do stuff like this... No one will like you if you do.
-char [[*[**[W]]]] = alloc char[*[**[]]] [128]
+char *[Z] = alloc char[][128] # Can't have pointer to reference.
 
-# [ W + 14 ] : [*[**[]]]
-# [ [ W + 14 ] ] + 20 = A : *[**[]]
-# A[20] = B : [**[]]
-# [ B + 18 ] = C : **[]
-# **C = D : []
-# [ D + 14 ] : char
+struct { int k; int [W]; } *A = alloc char[1024]; 
+A->W = alloc int[128]; # Declaration above is fine. This line is the problem.
 
-[ **[ ([ [ W + 14 ] ] + 20)[20]  + 18 ] + 14 ]
+# Note that these are legal
+# Pointers are unmanaged, so having references to pointers is fair game.
+# If struct is a reference, then it's alright
+ 
+char [*P] = alloc char *[128];
+struct nonanonymous { int k; int [W]; } *its_okay = alloc char[1024]; 
+nonanonymous [B] = alloc nonanymous; 
+B->W = alloc int[128];
+
+
+
 

@@ -7,7 +7,7 @@ using std::vector;
 
 struct gc_ll
 { 
-  gc_ll *prev, *next;
+  gc_ll *prev, *next; 
   void *data;
 };
 
@@ -43,6 +43,7 @@ static gcofs_t agg_table[] =
 #define HEAP_SZ (1 << 20)
 static gc_meta *begin;
 static align_t test_heap[HEAP_SZ / sizeof(align_t)];
+static vector<void **> weak_refs = vector<void **>();
 
 void *gc_create_ref(gclen_t len, gcofs_t atptr, int flags)
 {
@@ -93,6 +94,7 @@ void *gc_create_ref(gclen_t len, gcofs_t atptr, int flags)
 
       retmeta->atptr = atptr;
       retmeta->mark = 0;
+      retmeta->collected = 0;
       retmeta->rrcnt = 0;
       if(flags & ROOT_FLAG) { retmeta->rrcnt = 1; }
       if(flags & REFARRAY_FLAG) { retmeta->refarray = 0; }
@@ -131,6 +133,7 @@ void gc_destroy_ref(void *alloc)
   { metadata->next->prev = metadata->prev; }
 
   if(metadata == begin) { begin = metadata->next; }
+  metadata->collected = 1;
 }
 
 void gc_dec_ref(void *alloc)
@@ -142,12 +145,11 @@ void gc_inc_ref(void *alloc)
 {
   ((gc_meta *)alloc)[-1].rrcnt++;
 }
-
+/* Tracing */
 void gc_collect()
 {
   printf("Alive:\n");
 
-  /* Use tracing to handle cyclic references */
   for(gc_meta *trail = begin; trail; trail = trail->next)
   { 
     printf("%p: %lld\n", trail, trail->rrcnt);
@@ -203,19 +205,36 @@ void gc_collect()
     if(trail->mark) { trail->mark = 0; }
     else { printf("%p\n", trail); gc_destroy_ref(trail + 1); }
   }
+
+  for(int i = weak_refs.size()-1; i >= 0; i--)
+  {
+    void *weak = *(weak_refs[i]);
+    if( ((gc_meta *)weak)[-1].collected )
+    { 
+      *(weak_refs[i]) = 0; 
+      weak_refs[i] = weak_refs.back(); 
+      weak_refs.pop_back();
+    }
+  }
+
   printf("\n");
 
 }
 
 int main()
 {
-  gc_ll *my_ref = (gc_ll *)gc_create_ref(sizeof (gc_ll), 1, ROOT_FLAG);
+  gc_ll *my_ref = (gc_ll *)gc_create_ref(sizeof (gc_ll), 1, 0);
   gc_ll *my_ref1 = (gc_ll *)gc_create_ref(sizeof (gc_ll), 1, 0);
+  void **my_ref2 = (void **)gc_create_ref(sizeof(void *), 0, ROOT_FLAG);  // Introduce weak reference
+  weak_refs.push_back(my_ref2);
 
   my_ref->next = my_ref1;
   my_ref1->prev = my_ref;
+  *my_ref2 = my_ref;
+
 
   gc_collect();
+  printf("%p\n", *my_ref2);
   
   return 0; 
 }
