@@ -1,6 +1,3 @@
-# Trigger garbage collector
-collect
-
 # Create a new strong reference to an int named strawng
 int $[strawng] = alloc int;
 
