@@ -2,14 +2,16 @@
 collect
 
 # Create a new strong reference to an int named strawng
-int [strawng] = alloc strong int;
+int $[strawng] = alloc int;
 
-# Create a new weak reference in array of references X.
-char [[X]] = alloc strong char[][128]; X[0] = alloc char[256];
-
-# Note that this is illegal.
-# Weak references must be children to references (strong or weak).
+# Create a new weak reference to char named X.
 char [X] = alloc char[128];
+
+# Declare strong reference to reference to char Y and assign it X.
+char $[[Y]] = X;
+
+# Declare weak reference to weak reference to char Z and assign it X.
+char [[Z]] = X;
 
 # Access element 20 of strawng above
 [strawng + 20]
