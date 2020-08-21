@@ -7,11 +7,17 @@ int $[strawng] = alloc int;
 # Create a new weak reference to char named X.
 char [X] = alloc char[128];
 
-# Declare strong reference to reference to char Y and assign it X.
-char $[[Y]] = X;
+# Declare strong reference to char Y and assign it X.
+char $[Y] = X;
 
 # Declare weak reference to weak reference to char Z and assign it X.
-char [[Z]] = X;
+char [Z] = X;
+
+# Declare a strong reference to a weak reference to char
+char $[[W]];
+
+# Declare a strong reference to a strong reference to char
+char $[$[W]];
 
 # Access element 20 of strawng above
 [strawng + 20]
