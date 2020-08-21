@@ -4,8 +4,8 @@ collect
 # Create a new strong reference to an int named strawng
 int $[strawng] = alloc int;
 
-# Create a new weak reference to char named X.
-char [X] = alloc char[128];
+# Declare weak reference to char named X and assign it Z.
+char [X] = Z;
 
 # Declare strong reference to char Y and assign it X.
 char $[Y] = X;
@@ -18,6 +18,10 @@ char $[[W]];
 
 # Declare a strong reference to a strong reference to char
 char $[$[W]];
+
+# Note that this is illegal. Cannot use alloc for a weak reference.
+# Either assign it 0, or another reference.
+char [X] = alloc char[128];
 
 # Access element 20 of strawng above
 [strawng + 20]
