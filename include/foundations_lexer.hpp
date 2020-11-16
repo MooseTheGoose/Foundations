@@ -21,7 +21,15 @@ enum TokenType {
 };
 
 enum TokenOperatorType {
-  TO_PLUS = 0, TO_MINUS
+  TO_RSHIFT_ASGN, TO_LSHIFT_ASGN, TO_PLUS_ASGN, TO_MINUS_ASGN,
+  TO_TIMES_ASGN, TO_DIV_ASGN, TO_LEQ, TO_GEQ,  
+  TO_EQ, TO_NEQ, TO_LSHIFT, TO_RSHIFT,
+  TO_BWAND_ASGN, TO_BWXOR_ASGN, TO_BWOR_ASGN, TO_MOD_ASGN,
+  TO_ADDR,
+  TO_TIMES, TO_DIV, TO_PLUS, TO_MINUS, 
+  TO_ASGN, TO_BWNOT, TO_BWOR, TO_BWAND,
+  TO_DEREF, TO_MODULUS, TO_DOT, TO_COMMA,
+  TO_TERN_Q, TO_TERN_C
 };
 
 enum TokenBracketType {
@@ -54,12 +62,13 @@ struct Lexer {
   vector<Token> * tokens;
   int curr_lino;
   int curr_chno;
+  int status;
 
   const char * current_byte_ptr();
   int32_t eatchar();
   int32_t peeknext();
 
-  int32_t lex();
+  void lex();
   int32_t lex_lbracket();
   int32_t lex_rbracket();
   int32_t lex_number();
@@ -68,6 +77,8 @@ struct Lexer {
   int32_t lex_string();
   int32_t lex_keyword();
   int32_t lex_operator();
+
+  void print_tokens();
 };
 
 extern const char * const LINE_SEPARATOR;
@@ -80,5 +91,7 @@ extern const char * KEYWORD_STRINGS[];
 
 Lexer * new_lexer(const char * bytes);
 void free_lexer(Lexer * lexer);
+
+void print_tokens(const Token * tokens);
 
 #endif

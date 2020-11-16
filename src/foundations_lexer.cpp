@@ -25,7 +25,15 @@ const char * RBRACKET_STRINGS[] = {
 };
 
 const char * OPERATOR_STRINGS[] = {
-  "+", "-", 0
+  "<<=", ">>=", "+=", "-=", 
+  "*=", "/=", "<=", ">=", 
+  "==", "~=", "<<", ">>",
+  "&=", "^=", "|=", "%=",
+  "!>",
+  "*", "/", "+", "-", 
+  "=", "~", "|", "&",
+  "!", "%", ".", ",", 
+  "?", ":", 0
 }; 
 
 const char * KEYWORD_STRINGS[] = {
@@ -42,6 +50,7 @@ Lexer * new_lexer(const char * bytes) {
   char * newsrc = new char[lxr -> src_len + 1];
   memcpy(newsrc, bytes, lxr -> src_len + 1);
   lxr -> src = newsrc;
+  lxr -> status = 0;
   return lxr;
 }
 
@@ -49,6 +58,46 @@ void free_lexer(Lexer * lexer) {
   delete lexer -> tokens;
   delete lexer;
   delete[] lexer -> src;
+}
+
+void Lexer::print_tokens() {
+  Token * curr_token = this -> tokens -> data();
+  while(curr_token -> type != TT_TERM) {
+    Token t = *curr_token;
+    printf("Type: %s\n", TOKEN_TYPE_NAMES[t.type]);
+    printf("Line No.: %d\n", t.lino);
+    printf("Char No.: %d\n", t.chno);
+
+    switch(t.type) {
+      case TT_IDENTIFIER:
+        printf("Identifier: %s\n", t.value.identifier);
+        break;
+      case TT_INTEGER:
+        printf("Value: %llu\n", t.value.intval);
+        break;
+      case TT_FLOATING:
+        printf("Value: %lf\n", t.value.floatval);
+        break;
+      case TT_STRING:
+        printf("String: %s\n", t.value.strliteral);
+        break;
+      case TT_KEYWORD:
+        printf("Keyword: %s\n", KEYWORD_STRINGS[t.value.keyword]);
+        break;
+      case TT_LBRACKET:
+        printf("Bracket: %s\n", LBRACKET_STRINGS[t.value.bracket]);
+        break;
+      case TT_RBRACKET:
+        printf("Bracket: %s\n", RBRACKET_STRINGS[t.value.bracket]);
+        break;
+      case TT_OPERATOR:
+        printf("Operator: %s\n", OPERATOR_STRINGS[t.value.op]);
+        break;
+    }
+
+    curr_token += 1;
+    printf("\n");
+  }  
 }
 
 const char * Lexer::current_byte_ptr() {
@@ -87,8 +136,9 @@ int32_t Lexer::peeknext() {
   return this -> src[this -> src_index];
 }
 
-int Lexer::lex() {
+void Lexer::lex() {
   int32_t curr_char = this -> peeknext();
+  Token term;
 
   while(curr_char > 0) {
     while(is_space(curr_char)) {
@@ -113,15 +163,22 @@ int Lexer::lex() {
     } else if(curr_char < 0) {
       fprintf(stderr, "ERROR at %d:%d\n", this -> curr_lino, this -> curr_chno);
       fprintf(stderr, "Previous error or unknown character. Code %d\n", curr_char);
-      return -1;
+      this -> status = -1;
+      this -> eatchar();
+      curr_char = this -> peeknext();
     } else if(curr_char) {
-      printf("UNIMPLEMENTED\n");
+      fprintf(stderr, "Error at %d:%d\n", this -> curr_lino, this -> curr_chno);
+      fprintf(stderr, "Bad token prefix\n");
+      this -> status = -1;
       this -> eatchar();
       curr_char = this -> peeknext();
     }
   }
 
-  return curr_char;
+  term.type = TT_TERM;
+  term.lino = this -> curr_lino;
+  term.chno = this -> curr_chno;
+  this -> tokens -> push_back(term);
 }
 
 int32_t Lexer::lex_operator() {
@@ -200,7 +257,7 @@ int32_t Lexer::lex_string() {
 
   int32_t quote = this -> eatchar();
   int32_t curr_char = this -> peeknext();
-  while(curr_char != quote && curr_char) {
+  while(curr_char != quote && curr_char > 0) {
     if(curr_char == '\\') {
       this -> eatchar();
       curr_char = this -> peeknext();
@@ -221,7 +278,13 @@ int32_t Lexer::lex_string() {
         default:
           fprintf(stderr, "ERROR at %d:%d\n", this -> curr_lino, this -> curr_chno);
           fprintf(stderr, "Unrecognized escape sequence\n");
-          return -1;
+          this -> status = -1;
+          while(curr_char != quote && curr_char > 0) {
+            this -> eatchar();
+            curr_char = this -> peeknext();
+          }
+          this -> eatchar();
+          return this -> peeknext();
       }
     } else if(curr_char > 0) {
       if(is_prefix(LINE_SEPARATOR, this -> current_byte_ptr())) {
@@ -309,7 +372,12 @@ int32_t Lexer::lex_number() {
       if(intval >= base) {
         fprintf(stderr, "ERROR at %d:%d\n", this -> curr_lino, this -> curr_chno);
         fprintf(stderr, "Invalid digit '%c' for base %d\n", curr_char, base);
-        return -1;
+        this -> status = -1;
+        while(is_identifier_prefix(curr_char) || is_digit(curr_char)) {
+          this -> eatchar();
+          curr_char = this -> peeknext();
+        }
+        return curr_char;
       }
       this -> eatchar();
       curr_char = this -> peeknext();
@@ -321,13 +389,23 @@ int32_t Lexer::lex_number() {
     if(hexval < 0 || hexval >= base) {
       fprintf(stderr, "ERROR at %d:%d\n", this -> curr_lino, this -> curr_chno);
       fprintf(stderr, "Invalid digit '%c' for base %d\n", curr_char, base);
-      this -> eatchar();
-      return -1;
+      this -> status = -1;
+      while(is_identifier_prefix(curr_char) || is_digit(curr_char)) {
+        this -> eatchar();
+        curr_char = this -> peeknext();
+      }
+      return curr_char;
     }
     uint64_t new_intval = intval * base;
     if(new_intval / base < intval || (new_intval + hexval) < intval) {
       fprintf(stderr, "WARNING at %d:%d\n", this -> curr_lino, this -> curr_chno);
       fprintf(stderr, "Integer literal overflow\n");
+      this -> status = -1;
+      while(is_identifier_prefix(curr_char) || is_digit(curr_char)) {
+        this -> eatchar();
+        curr_char = this -> peeknext();
+      }
+      return curr_char;
     }
     this -> eatchar();
     curr_char = this -> peeknext();
@@ -348,8 +426,12 @@ int32_t Lexer::lex_number() {
       if(hexval < 0 || hexval >= base) {
         fprintf(stderr, "ERROR at %d:%d\n", this -> curr_lino, this -> curr_chno);
         fprintf(stderr, "Invalid digit '%c' for base %d\n", curr_char, base);
-        this -> eatchar();
-        return -1;
+        this -> status = -1;
+        while(is_identifier_prefix(curr_char) || is_digit(curr_char)) {
+          this -> eatchar();
+          curr_char = this -> peeknext();
+        }
+        return curr_char;
       }
       this -> eatchar();
       curr_char = this -> peeknext();
