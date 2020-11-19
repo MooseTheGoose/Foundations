@@ -2,8 +2,8 @@
 #include "foundations_parser.hpp"
 #include <stdio.h>
 
-int main() {
-  Lexer * lxr = new_lexer("1.0 + 2 * 3 >> 4");
+int main(int argc, char * argv[]) {
+  Lexer * lxr = new_lexer(argv[1]);
   lxr -> lex();
 
   if(lxr -> status >= 0) {

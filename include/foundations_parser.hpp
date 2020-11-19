@@ -36,6 +36,6 @@ struct Parser {
 
 extern const char * DERIVATION_TYPE_STRINGS[];
 
-#define NULL_OPERATOR -1
+#define NULL_OPERATOR (-1)
 
 #endif
