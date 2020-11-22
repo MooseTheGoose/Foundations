@@ -1,0 +1,42 @@
+# Definitions
+
+x : int = 0 
+f :: () {}
+z := 246 
+
+# Array literals use [] instead of {}.
+
+X: [20]int = [1, 2, 3] 
+
+# New lines terminate statements.
+# Parantheses can override this except in brackets.
+# Semicolons always terminate statements.
+# All these assignments are legal.
+
+t :: (1 +
+      2)
+
+y := (() {
+        return 0
+      })();
+
+z :: ([1, 2, 3, 4,
+       5, 6])
+
+# Multiple assignments are a thing, 
+# but you must put it in parantheses.
+# The below code swaps x and y.
+# Also, semicolons can also terminate statements
+
+(x, y) = ((Z: int, W: int) { return (W, Z); }) (x, y);
+
+# Language features pointers (Declared using !).
+# Language has strong and weak references ($ and @ respectively).
+# Certain mish-mashes between them are illegal.
+
+x : !INT = 300;       # Legal
+y : @!INT;            # Legal
+w : $INT = 300;       # Illegal
+z : @INT = x;         # Illegal
+
+
