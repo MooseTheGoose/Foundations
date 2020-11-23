@@ -1,4 +1,5 @@
 #include "foundations_lexer.hpp"
+#include "foundations_parser.hpp"
 #include "foundations_utils.hpp"
 #include <string.h>
 #include <ctype.h>
@@ -13,7 +14,8 @@ const char * TOKEN_TYPE_NAMES[] = {
   "TT_TERM", "TT_NEWLINE", "TT_IDENTIFIER",
   "TT_OPERATOR", "TT_LBRACKET", "TT_RBRACKET",
   "TT_STRING", "TT_INTEGER", "TT_FLOATING",
-  "TT_KEYWORD", "TT_STATEMENT_TERM"
+  "TT_KEYWORD", "TT_STATEMENT_TERM",
+  "TT_TREE", 0
 };
 
 const char * LBRACKET_STRINGS[] = {
@@ -38,61 +40,68 @@ const char * OPERATOR_STRINGS[] = {
 }; 
 
 const char * KEYWORD_STRINGS[] = {
-  "int", 0
+  "int", "s8", "s16", "s32", "s64",
+  "uint", "u8", "u16", "u32", "u64",
+  "xor", "and", "not", "or", 0
 };
 
 Lexer * new_lexer(const char * bytes) {
   Lexer * lxr = new Lexer;
-  lxr -> tokens = new vector<Token>;
+  lxr -> tokens = new vector<Token>();
+  lxr -> string_heap = new vector<char *>();
   lxr -> curr_lino = 1;
   lxr -> curr_chno = 1;
   lxr -> src_index = 0;
+  lxr -> src = copy_str(bytes);
   lxr -> src_len = strlen(bytes);
-  char * newsrc = new char[lxr -> src_len + 1];
-  memcpy(newsrc, bytes, lxr -> src_len + 1);
-  lxr -> src = newsrc;
   lxr -> status = 0;
   return lxr;
 }
 
 void free_lexer(Lexer * lexer) {
+  const Token * data = lexer -> tokens -> data();
+  char ** const strheap = lexer -> string_heap -> data();
   delete lexer -> tokens;
-  delete lexer;
   delete[] lexer -> src;
+  for(size_t i = 0; i  < lexer -> string_heap -> size(); i++) {
+    delete[] strheap[i];
+  }
+  delete lexer -> string_heap;
+  delete lexer;
 }
 
 void Lexer::print_tokens() {
   Token * curr_token = this -> tokens -> data();
   while(curr_token -> type != TT_TERM) {
-    Token t = *curr_token;
-    printf("Type: %s\n", TOKEN_TYPE_NAMES[t.type]);
-    printf("Line No.: %d\n", t.lino);
-    printf("Char No.: %d\n", t.chno);
+    Token * t = curr_token;
+    printf("Type: %s\n", TOKEN_TYPE_NAMES[t -> type]);
+    printf("Line No.: %d\n", t -> lino);
+    printf("Char No.: %d\n", t -> chno);
 
-    switch(t.type) {
+    switch(t -> type) {
       case TT_IDENTIFIER:
-        printf("Identifier: %s\n", t.value.identifier);
+        printf("Identifier: %s\n", t -> value.identifier);
         break;
       case TT_INTEGER:
-        printf("Value: %llu\n", t.value.intval);
+        printf("Value: %llu\n", t -> value.intval);
         break;
       case TT_FLOATING:
-        printf("Value: %lf\n", t.value.floatval);
+        printf("Value: %lf\n", t -> value.floatval);
         break;
       case TT_STRING:
-        printf("String: %s\n", t.value.strliteral);
+        printf("String: %s\n", t -> value.strliteral);
         break;
       case TT_KEYWORD:
-        printf("Keyword: %s\n", KEYWORD_STRINGS[t.value.keyword]);
+        printf("Keyword: %s\n", KEYWORD_STRINGS[t -> value.keyword]);
         break;
       case TT_LBRACKET:
-        printf("Bracket: %s\n", LBRACKET_STRINGS[t.value.bracket]);
+        printf("Bracket: %s\n", LBRACKET_STRINGS[t -> value.bracket]);
         break;
       case TT_RBRACKET:
-        printf("Bracket: %s\n", RBRACKET_STRINGS[t.value.bracket]);
+        printf("Bracket: %s\n", RBRACKET_STRINGS[t -> value.bracket]);
         break;
       case TT_OPERATOR:
-        printf("Operator: %s\n", OPERATOR_STRINGS[t.value.op]);
+        printf("Operator: %s\n", OPERATOR_STRINGS[t -> value.op]);
         break;
     }
 
@@ -113,13 +122,13 @@ int32_t Lexer::eatchar() {
   if(eat >= 0) {
     if(is_prefix(LINE_SEPARATOR, this -> current_byte_ptr())) {
       Token tok;
-
-      tok.type = TT_NEWLINE;
-      tok.lino = this -> curr_lino;
+	  tok.type = TT_NEWLINE;
+	  tok.lino = this -> curr_lino;
       tok.chno = this -> curr_chno;
+
       this -> tokens -> push_back(tok);
 
-      this -> src += strlen(LINE_SEPARATOR);
+      this -> src_index += strlen(LINE_SEPARATOR);
       this -> curr_lino += 1;
       this -> curr_chno = 1;
     } else {
@@ -137,7 +146,7 @@ int32_t Lexer::peeknext() {
   return this -> src[this -> src_index];
 }
 
-void Lexer::lex() {
+void Lexer::lex_stage1() {
   int32_t curr_char = this -> peeknext();
   Token term;
 
@@ -180,6 +189,11 @@ void Lexer::lex() {
   term.lino = this -> curr_lino;
   term.chno = this -> curr_chno;
   this -> tokens -> push_back(term);
+}
+
+
+void Lexer::lex() {
+  this -> lex_stage1();
 }
 
 int32_t Lexer::lex_operator() {
@@ -309,6 +323,7 @@ int32_t Lexer::lex_string() {
   memcpy(newliteral, literal.data(), literal.size() + 1);
   tok.value.strliteral = newliteral;
   this -> tokens -> push_back(tok);
+  this -> string_heap -> push_back(newliteral);
 
   this -> eatchar();
   return this -> peeknext();
@@ -341,7 +356,8 @@ int32_t Lexer::lex_identifier() {
     tok.value.keyword = (enum TokenKeyword)streq_nocase_index(KEYWORD_STRINGS, literal);
     delete[] literal;
   } else { 
-    tok.value.identifier = literal;  
+    tok.value.identifier = literal;
+    this -> string_heap -> push_back(literal);  
   }
   this -> tokens -> push_back(tok);
 

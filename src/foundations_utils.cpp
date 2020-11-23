@@ -1,5 +1,13 @@
 #include "foundations_utils.hpp"
 #include <ctype.h>
+#include <string.h>
+
+char * copy_str (const char * str) {
+  size_t len = strlen(str);
+  char * newstr = new char[len + 1];
+  memcpy(newstr, str, len + 1);
+  return newstr;
+}
 
 int is_space(int32_t unichar) {
   return isspace(unichar);

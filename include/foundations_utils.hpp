@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+char * copy_str(const char * str);
 int is_prefix(const char * prefix, const char * str);
 int get_prefix_index(const char * prefixes[], const char *str);
 int streq_nocase(const char * str1, const char * str2);

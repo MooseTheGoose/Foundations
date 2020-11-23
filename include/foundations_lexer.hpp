@@ -11,13 +11,18 @@ using std::vector;
  *        I rewrite it in Foundations, but the Foundations
  *        compiler written in C++ will only accept ASCII text
  *        just to get this done and over with.
+ *
+ *  TODO:  Make it so that tokens are dynamically allocated
+ *         rather than statically allocated.
  */
 
 enum TokenType {
+  /* Stage 1 token types */
   TT_TERM = 0, TT_NEWLINE, TT_IDENTIFIER,
   TT_OPERATOR, TT_LBRACKET, TT_RBRACKET,
   TT_STRING, TT_INTEGER, TT_FLOATING,
-  TT_KEYWORD, TT_STATEMENT_TERM
+  TT_KEYWORD, TT_STATEMENT_TERM,
+  TT_TREE
 };
 
 enum TokenOperatorType {
@@ -37,8 +42,12 @@ enum TokenBracketType {
 };
 
 enum TokenKeyword {
-  TKW_INT = 0
+  TKW_INT = 0, TKW_S8, TKW_S16, TKW_S32, TKW_S64,
+  TKW_UINT, TKW_U8, TKW_U16, TKW_U32, TKW_U64,
+  TKW_XOR, TKW_AND, TKW_NOT, TKW_OR
 };
+
+struct DerivationTree;
 
 struct Token {
   enum TokenType type;
@@ -52,14 +61,16 @@ struct Token {
     enum TokenBracketType bracket;
     enum TokenOperatorType op;
     enum TokenKeyword keyword;
+    DerivationTree * tree;
   } value;
 };
 
 struct Lexer {
-  const char * src;
+  char * src;
   size_t src_index;
   size_t src_len;
   vector<Token> * tokens;
+  vector<char *> * string_heap;
   int curr_lino;
   int curr_chno;
   int status;
@@ -68,7 +79,9 @@ struct Lexer {
   int32_t eatchar();
   int32_t peeknext();
 
+  void lex_stage1();
   void lex();
+
   int32_t lex_lbracket();
   int32_t lex_rbracket();
   int32_t lex_number();
