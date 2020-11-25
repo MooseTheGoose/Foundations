@@ -25,21 +25,60 @@ namespace Foundations
         OP_DIV = 0x105,
         OP_MOD = 0x106,
         OP_ADDR = 0x107,
+        OP_BWAND = 0x108,
+        OP_BWXOR = 0x109,
+        OP_BWOR = 0x10A,
+        OP_LOGAND = 0x10C,
+        OP_LOGXOR = 0x10D,
+        OP_LOGOR = 0x10E,
+        OP_NEQ = 0x10E,
+        OP_EQ = 0x10F,
+        OP_GT = 0x110,
+        OP_LT = 0x111,
+        OP_GE = 0x112,
+        OP_LE = 0x113,
+        OP_DOT = 0x114,
+        OP_ARROW = 0x115,
+        OP_LSHIFT = 0x116,
+        OP_RSHIFT = 0x117,
+        OP_PLUS_ASGN = 0x118,
+        OP_MINUS_ASGN = 0x119,
+        OP_MULT_ASGN = 0x11A,
+        OP_DIV_ASGN = 0x11B,
+        OP_MOD_ASGN = 0x11C,
+        OP_LSHIFT_ASGN = 0x11D,
+        OP_RSHIFT_ASGN = 0x11E,
+        OP_BWAND_ASGN = 0x11F,
+        OP_BWXOR_ASGN = 0x120,
+        OP_BWOR_ASGN = 0x121,
+        OP_POLYTYPE = 0x122,
+        OP_COMMA = 0x123,
+        OP_BWNOT = 0x124,
+        OP_LOGNOT = 0x125,
+        OP_DECIDES = 0x126,
+        OP_COALESCE = 0x127,
 
-        KW_UINT = 0x200,
-        KW_U64 =  0x201,
-        KW_U32 =  0x202,
-        KW_U16 =  0x203,
-        KW_U8 =   0x204,
-        KW_INT =  0x205,
-        KW_S64 =  0x206,
-        KW_S32 =  0x207,
-        KW_S16 =  0x208,
-        KW_S8 =   0x209,
+        TYPE_UINT = 0x200,
+        TYPE_U64 =  0x201,
+        TYPE_U32 =  0x202,
+        TYPE_U16 =  0x203,
+        TYPE_U8 =   0x204,
+        TYPE_INT =  0x205,
+        TYPE_S64 =  0x206,
+        TYPE_S32 =  0x207,
+        TYPE_S16 =  0x208,
+        TYPE_S8 =   0x209,
 
         NUM_UINT64 = 0x300,
         NUM_FLOAT32 = 0x301,
-        NUM_FLOAT64 = 0x302
+        NUM_FLOAT64 = 0x302,
+
+        BRACKET_LPAREN = 0x400,
+        BRACKET_RPAREN = 0x401,
+        BRACKET_LCURLY = 0x402,
+        BRACKET_RCURLY = 0x403,
+        BRACKET_LSQUARE = 0x404,
+        BRACKET_RSQUARE = 0x405
     }
 
     struct Token
@@ -69,22 +108,60 @@ namespace Foundations
         public const char LineSep = '\n';
         public const char StatementTerm = ';';
 
+        /*
+         * Note: These delimiters must be ordered by descending length.
+         */
+
         public TokenType[] DelimiterTypes = {
-            TokenType.OP_ADDR, TokenType.OP_DIV, TokenType.OP_MULT, TokenType.OP_MOD,
-            TokenType.OP_DEFN, TokenType.OP_MINUS, TokenType.OP_PLUS, TokenType.OP_ASGN
+            TokenType.OP_LSHIFT_ASGN, TokenType.OP_RSHIFT_ASGN,
+            TokenType.OP_PLUS_ASGN, TokenType.OP_MINUS_ASGN,
+            TokenType.OP_MULT_ASGN, TokenType.OP_DIV_ASGN, TokenType.OP_MOD_ASGN,
+            TokenType.OP_BWAND_ASGN, TokenType.OP_BWXOR_ASGN, TokenType.OP_BWOR_ASGN,
+            TokenType.OP_LSHIFT, TokenType.OP_RSHIFT,
+            TokenType.OP_NEQ, TokenType.OP_EQ,
+            TokenType.OP_LE, TokenType.OP_GE,
+            TokenType.OP_COALESCE,
+            TokenType.OP_LT, TokenType.OP_GT,
+            TokenType.OP_DOT, TokenType.OP_COMMA, TokenType.OP_POLYTYPE, TokenType.OP_ADDR,
+            TokenType.OP_BWNOT, TokenType.OP_BWAND, TokenType.OP_BWXOR, TokenType.OP_BWOR,
+            TokenType.OP_DIV, TokenType.OP_MULT, TokenType.OP_MOD,
+            TokenType.OP_DEFN, TokenType.OP_MINUS, TokenType.OP_PLUS, TokenType.OP_ASGN,
+            TokenType.BRACKET_LSQUARE, TokenType.BRACKET_LPAREN, TokenType.BRACKET_LCURLY,
+            TokenType.BRACKET_RSQUARE, TokenType.BRACKET_RPAREN, TokenType.BRACKET_RCURLY
         };
 
         public string[] DelimiterStrings = {
-            "!", "/", "*", "%",
-            ":", "-", "+", "="
+            "<<=", ">>=",
+            "+=", "-=",
+            "*=", "/=", "%=",
+            "&=", "^=", "|=",
+            "<<", ">>",
+            "~=", "==",
+            "<=", ">=",
+            "??",
+            "<", ">",
+            ".", ",", "?", "!",
+            "~", "&", "^", "|",
+            "/", "*", "%",
+            ":", "-", "+", "=",
+            "[", "(", "{",
+            "]", ")", "}"
         };
 
+        /*
+         * Note: These keywords can be in any order, unlike delimiters.
+         */
+
         public TokenType[] KeywordTypes = {
-            TokenType.KW_UINT, TokenType.KW_U64, TokenType.KW_U32, TokenType.KW_U16, TokenType.KW_U8,
-            TokenType.KW_INT, TokenType.KW_S64, TokenType.KW_S32, TokenType.KW_S16, TokenType.KW_S8
+            TokenType.OP_DECIDES,
+            TokenType.OP_LOGNOT, TokenType.OP_LOGAND, TokenType.OP_LOGXOR, TokenType.OP_LOGOR,
+            TokenType.TYPE_UINT, TokenType.TYPE_U64, TokenType.TYPE_U32, TokenType.TYPE_U16, TokenType.TYPE_U8,
+            TokenType.TYPE_INT, TokenType.TYPE_S64, TokenType.TYPE_S32, TokenType.TYPE_S16, TokenType.TYPE_S8
         };
 
         public string[] KeywordStrings = {
+            "decides", 
+            "not", "and", "xor", "or",
             "uint", "u64", "u32", "u16", "u8",
             "int", "s64", "s32", "s16", "s8"
         };
@@ -149,21 +226,6 @@ namespace Foundations
             for (int i = 0; i < prefixes.Length && index < 0; i++)
             {
                 if (this.StartsWith(prefixes[i]))
-                {
-                    index = i;
-                }
-            }
-
-            return index;
-        }
-
-        public static int StringStartsWithIndex(string startsWith, string[] prefixes)
-        {
-            int index = -1;
-
-            for (int i = 0; i < prefixes.Length && index < 0; i++)
-            {
-                if (startsWith.StartsWith(prefixes[i]))
                 {
                     index = i;
                 }
@@ -238,7 +300,7 @@ namespace Foundations
 
 
             string finalStr = build.ToString();
-            if ((kwIndex = Lexer.StringStartsWithIndex(finalStr, this.KeywordStrings)) >= 0)
+            if ((kwIndex = Array.IndexOf(this.KeywordStrings, finalStr)) >= 0)
             {
                 newToken.type = this.KeywordTypes[kwIndex];
             }
