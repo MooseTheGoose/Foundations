@@ -1,2 +1,5 @@
-﻿X : int = 0;
-Y : int = 1;
+﻿X : int = 0_77_;
+Y : int = 1_023_._2_33_45_e+_2_4;
+z : string = "Hello, World!\n\x0A\
+Goodbye, world!\n";
+w:int=2027+23;

@@ -12,7 +12,7 @@ namespace Foundations
         {
             using (StreamReader rdr = File.OpenText("..\\..\\testlexer.fnd"))
             {
-                string fcontents = rdr.ReadToEnd();
+                string fcontents = rdr.ReadToEnd().Replace("\r\n", "\n");
                 Lexer lxr = new Lexer(fcontents);
                 foreach (Token t in lxr.tokens)
                 {
