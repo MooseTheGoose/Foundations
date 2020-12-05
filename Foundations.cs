@@ -10,14 +10,21 @@ namespace Foundations
     {
         public static void Main(string[] args)
         {
-            using (StreamReader rdr = File.OpenText("..\\..\\Foundations.cs"))
+            using (StreamReader rdr = File.OpenText("..\\..\\testlexer.fnd"))
             {
-                string fcontents = rdr.ReadToEnd();
-                Console.WriteLine("Printing Myself");
-                Console.WriteLine("---------------");
-                Console.WriteLine(fcontents);
-                Console.ReadKey();
+                string fcontents = rdr.ReadToEnd().Replace("\r\n", "\n");
+                Lexer lxr = new Lexer(fcontents);
+                foreach (Token t in lxr.tokens)
+                {
+                    Console.WriteLine(t.type);
+                    Console.WriteLine(t.lino);
+                    Console.WriteLine(t.chno);
+                    Console.WriteLine(t.data ?? "null");
+                    Console.WriteLine();
+                }
             }
+
+            Console.ReadKey();
         }
     }
 }

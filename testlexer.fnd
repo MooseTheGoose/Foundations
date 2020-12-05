@@ -1,0 +1,9 @@
+﻿X : int = 0_77_;
+Y : int = 1_023_._2_33_45_e_-_2_4__;
+z : string = "Hello, World!\n\x0A\
+Goodbye, world!\n";
+w:int=2027+23;
+integer: int = true decides (2, 3);
+i: int = 0xFFFF_FFFF_FFFF_FFFF_FFFF;
+j: int = 1234e5678;
+
