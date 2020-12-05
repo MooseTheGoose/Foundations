@@ -90,6 +90,7 @@
     <Content Include="FoundationsExamples.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Danger.cs" />
     <Compile Include="Foundations.cs" />
     <Compile Include="Lexer.cs" />
   </ItemGroup>

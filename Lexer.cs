@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using System.IO;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -105,6 +106,7 @@ namespace Foundations
         public string src;
 
         public List<Token> tokens;
+        public List<Danger> errs;
         public const char LineSep = '\n';
         public const char StatementTerm = ';';
 
@@ -174,6 +176,7 @@ namespace Foundations
             this.src = source;
 
             this.tokens = new List<Token>();
+            this.errs = new List<Danger>();
 
             this.Lex();
         }
@@ -344,8 +347,8 @@ namespace Foundations
                     radix = 8;
                     if (currChar > '7' && currChar != '_')
                     {
-                        Token errToken = new Token(TokenType.ERROR, this.currLino, this.currChno, "Expected octal digit here");
-                        this.tokens.Add(errToken);
+                        Danger errToken = new Danger(this.currLino, this.currChno, Danger.ERROR_SEVERITY, Danger.EINTEGER_PARSE_NUM, "Expected octal digit here");
+                        this.errs.Add(errToken);
                         while (currChar == '_' || Char.IsLetterOrDigit(currChar))
                         {
                             this.EatChar();
@@ -356,8 +359,8 @@ namespace Foundations
                 }
                 else if(Char.IsLetterOrDigit(currChar))
                 {
-                    Token errToken = new Token(TokenType.ERROR, this.currLino, this.currChno, "Bad base identifier in numeric literal");
-                    this.tokens.Add(errToken);
+                    Danger errToken = new Danger(this.currLino, this.currChno, Danger.ERROR_SEVERITY, Danger.EINTEGER_PARSE_NUM, "Bad base identifier in numeric literal");
+                    this.errs.Add(errToken);
                     while (currChar == '_' || Char.IsLetterOrDigit(currChar))
                     {
                         this.EatChar();
@@ -430,6 +433,12 @@ namespace Foundations
                     num.Append(currChar);
                     this.EatChar();
                     currChar = this.PeekChar();
+
+                    while (currChar == '_')
+                    {
+                        this.EatChar();
+                        currChar = this.PeekChar();
+                    }
                     if (currChar == '-' || currChar == '+')
                     {
                         num.Append(currChar);
@@ -456,8 +465,8 @@ namespace Foundations
 
                     if (!Char.IsDigit(num[num.Length - 1]))
                     {
-                        Token errToken = new Token(TokenType.ERROR, this.currLino, this.currChno, "Expected decimal integer after exponent specifier");
-                        this.tokens.Add(errToken);
+                        Danger errToken = new Danger(this.currLino, this.currChno, Danger.ERROR_SEVERITY, Danger.EFLOAT_PARSE_NUM, "Expected decimal integer after exponent specifier");
+                        this.errs.Add(errToken);
                         while (currChar == '_' || Char.IsLetterOrDigit(currChar))
                         {
                             this.EatChar();
@@ -470,12 +479,26 @@ namespace Foundations
                 try
                 {
                     tryFloat64 = Convert.ToDouble(num.ToString());
+
+                    tryFloat32 = (float)tryFloat64;
+                    if (tryFloat32 == tryFloat64)
+                    {
+                        newToken.type = TokenType.NUM_FLOAT32;
+                        newToken.data = tryFloat32;
+                    }
+                    else
+                    {
+                        newToken.type = TokenType.NUM_FLOAT64;
+                        newToken.data = tryFloat64;
+                    }
+                    this.tokens.Add(newToken);
                 }
                 catch (OverflowException)
                 {
-                    newToken.type = TokenType.WARNING;
-                    newToken.data = "Floating point value expressed here overflows";
+                    newToken.type = TokenType.NUM_FLOAT64;
+                    newToken.data = Double.MaxValue;
                     this.tokens.Add(newToken);
+                    this.errs.Add(new Danger(newToken.lino, newToken.chno, Danger.WFLOAT_OVFLOW_SEV, Danger.WFLOAT_OVFLOW_NUM, "Float here overflowed. Defaulting to FLOAT64_MAX."));
                     while (currChar == '_' || Char.IsLetterOrDigit(currChar))
                     {
                         this.EatChar();
@@ -483,26 +506,13 @@ namespace Foundations
                     }
                     return currChar;
                 }
-
-                tryFloat32 = (float)tryFloat64;
-                if (tryFloat32 == tryFloat64)
-                {
-                    newToken.type = TokenType.NUM_FLOAT32;
-                    newToken.data = tryFloat32;
-                }
-                else
-                {
-                    newToken.type = TokenType.NUM_FLOAT64;
-                    newToken.data = tryFloat64;
-                }
-                this.tokens.Add(newToken);
             }
             else
             {
                 if (num.Length == 0)
                 {
-                    Token errToken = new Token(TokenType.ERROR, this.currLino, this.currChno, "Number has no digits after base");
-                    this.tokens.Add(errToken);
+                    Danger errToken = new Danger(this.currLino, this.currChno, Danger.ERROR_SEVERITY, Danger.EINTEGER_PARSE_NUM, "Number has no digits after base");
+                    this.errs.Add(errToken);
                     while (currChar == '_' || Char.IsLetterOrDigit(currChar))
                     {
                         this.EatChar();
@@ -518,8 +528,9 @@ namespace Foundations
                 }
                 catch (OverflowException)
                 {
+                    this.errs.Add(new Danger(newToken.lino, newToken.chno, Danger.WINTEGER_OVFLOW_SEV, Danger.WINTEGER_OVFLOW_NUM, "Integer overflow here. Defaulting to UINT64_MAX"));
                     newToken.type = TokenType.WARNING;
-                    newToken.data = "Integer value expressed overflows";
+                    newToken.data = UInt64.MaxValue;
                 }
 
                 this.tokens.Add(newToken);
@@ -549,7 +560,7 @@ namespace Foundations
                     {
                         message = "String is incomplete on EOF";
                     }
-                    this.tokens.Add(new Token(TokenType.ERROR, this.currLino, this.currChno, message));
+                    this.errs.Add(new Danger(this.currLino, this.currChno, Danger.ERROR_SEVERITY, Danger.ESTRING_PARSE_NUM, message));
                     while (currChar != '\0' && currChar != quote)
                     {
                         this.EatChar();
@@ -598,8 +609,8 @@ namespace Foundations
                     char hexDigit2 = this.EatChar();
                     if (!Lexer.IsXDigit(hexDigit1) || !Lexer.IsXDigit(hexDigit2))
                     {
-                        Token errToken = new Token(TokenType.ERROR, this.currLino, this.currChno, "Expected 2 hex digits for \\x escape");
-                        this.tokens.Add(errToken);
+                        Danger errToken = new Danger(this.currLino, this.currChno, Danger.ERROR_SEVERITY, Danger.EESCAPE_PARSE_NUM, "Expected 2 hex digits for \\x escape");
+                        this.errs.Add(errToken);
                     }
                     currChar = (char)((byte)(Lexer.HexDigitToValue(hexDigit1) << 4 | Lexer.HexDigitToValue(hexDigit2)));
                     break;
@@ -654,10 +665,10 @@ namespace Foundations
                 }
                 else
                 {
-                    Token newToken = new Token(TokenType.ERROR, this.currLino, this.currChno, "Unexpected Character");
+                    Danger newErr = new Danger(this.currLino, this.currChno, Danger.ERROR_SEVERITY, Danger.EUNRECOGNIZABLE_CHAR_NUM, "Unexpected Character");
                     this.EatChar();
                     currChar = this.PeekChar();
-                    this.tokens.Add(newToken);
+                    this.errs.Add(newErr);
                 }
             }
 
