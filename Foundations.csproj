@@ -93,6 +93,7 @@
     <Compile Include="Danger.cs" />
     <Compile Include="Foundations.cs" />
     <Compile Include="Lexer.cs" />
+    <Compile Include="Parser.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".git\objects\info\" />
