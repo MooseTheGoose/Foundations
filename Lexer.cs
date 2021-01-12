@@ -10,76 +10,75 @@ namespace Foundations
 {
     enum TokenType
     {
-        TERM = 0,
-        NEWLINE = 1,
-        STATEMENT_TERM = 2,
         ERROR = 3,
         WARNING = 4,
-        IDENTIFIER = 5,
-        STRING = 6,
 
-        OP_DEFN = 0x100,
-        OP_MINUS = 0x101,
-        OP_PLUS = 0x102,
-        OP_ASGN = 0x103,
-        OP_MULT = 0x104,
-        OP_DIV = 0x105,
-        OP_MOD = 0x106,
-        OP_ADDR = 0x107,
-        OP_BWAND = 0x108,
-        OP_BWXOR = 0x109,
-        OP_BWOR = 0x10A,
-        OP_LOGAND = 0x10C,
-        OP_LOGXOR = 0x10D,
-        OP_LOGOR = 0x10E,
-        OP_NEQ = 0x10E,
-        OP_EQ = 0x10F,
-        OP_GT = 0x110,
-        OP_LT = 0x111,
-        OP_GE = 0x112,
-        OP_LE = 0x113,
-        OP_DOT = 0x114,
-        OP_ARROW = 0x115,
-        OP_LSHIFT = 0x116,
-        OP_RSHIFT = 0x117,
-        OP_PLUS_ASGN = 0x118,
-        OP_MINUS_ASGN = 0x119,
-        OP_MULT_ASGN = 0x11A,
-        OP_DIV_ASGN = 0x11B,
-        OP_MOD_ASGN = 0x11C,
-        OP_LSHIFT_ASGN = 0x11D,
-        OP_RSHIFT_ASGN = 0x11E,
-        OP_BWAND_ASGN = 0x11F,
-        OP_BWXOR_ASGN = 0x120,
-        OP_BWOR_ASGN = 0x121,
-        OP_POLYTYPE = 0x122,
-        OP_COMMA = 0x123,
-        OP_BWNOT = 0x124,
-        OP_LOGNOT = 0x125,
-        OP_DECIDES = 0x126,
-        OP_COALESCE = 0x127,
+        OP_DEFN = 0x10000,
+        OP_MINUS = 0x10001,
+        OP_PLUS = 0x10002,
+        OP_ASGN = 0x10003,
+        OP_MULT = 0x10004,
+        OP_DIV = 0x10005,
+        OP_MOD = 0x10006,
+        OP_ADDR = 0x10007,
+        OP_BWAND = 0x10008,
+        OP_BWXOR = 0x10009,
+        OP_BWOR = 0x1000A,
+        OP_NEQ = 0x1000E,
+        OP_EQ = 0x1000F,
+        OP_GT = 0x10010,
+        OP_LT = 0x10011,
+        OP_GE = 0x10012,
+        OP_LE = 0x10013,
+        OP_DOT = 0x10014,
+        OP_ARROW = 0x10015,
+        OP_LSHIFT = 0x10016,
+        OP_RSHIFT = 0x10017,
+        OP_PLUS_ASGN = 0x10018,
+        OP_MINUS_ASGN = 0x10019,
+        OP_MULT_ASGN = 0x1001A,
+        OP_DIV_ASGN = 0x1001B,
+        OP_MOD_ASGN = 0x1001C,
+        OP_LSHIFT_ASGN = 0x1001D,
+        OP_RSHIFT_ASGN = 0x1001E,
+        OP_BWAND_ASGN = 0x1001F,
+        OP_BWXOR_ASGN = 0x10020,
+        OP_BWOR_ASGN = 0x10021,
+        OP_POLYTYPE = 0x10022,
+        OP_COMMA = 0x10023,
+        OP_BWNOT = 0x10024,
+        OP_DECIDES = 0x10026,
+        OP_COALESCE = 0x10027,
+        OP_DEREF = 0x10028,
 
-        TYPE_UINT = 0x200,
-        TYPE_U64 =  0x201,
-        TYPE_U32 =  0x202,
-        TYPE_U16 =  0x203,
-        TYPE_U8 =   0x204,
-        TYPE_INT =  0x205,
-        TYPE_S64 =  0x206,
-        TYPE_S32 =  0x207,
-        TYPE_S16 =  0x208,
-        TYPE_S8 =   0x209,
+        TYPE_UINT = 0x20000,
+        TYPE_U64 =  0x20001,
+        TYPE_U32 =  0x20002,
+        TYPE_U16 =  0x20003,
+        TYPE_U8 =   0x20004,
+        TYPE_INT =  0x20005,
+        TYPE_S64 =  0x20006,
+        TYPE_S32 =  0x20007,
+        TYPE_S16 =  0x20008,
+        TYPE_S8 =   0x20009,
 
-        NUM_UINT64 = 0x300,
-        NUM_FLOAT32 = 0x301,
-        NUM_FLOAT64 = 0x302,
+        VAL_UINT64 = 0x30000,
+        VAL_FLOAT32 = 0x30001,
+        VAL_FLOAT64 = 0x30002,
+        VAL_STRING = 0x30003,
+        VAL_IDENTIFIER = 0x30004,
 
-        BRACKET_LPAREN = 0x400,
-        BRACKET_RPAREN = 0x401,
-        BRACKET_LCURLY = 0x402,
-        BRACKET_RCURLY = 0x403,
-        BRACKET_LSQUARE = 0x404,
-        BRACKET_RSQUARE = 0x405
+
+        BRACKET_LPAREN = 0x40000,
+        BRACKET_RPAREN = 0x40001,
+        BRACKET_LCURLY = 0x40002,
+        BRACKET_RCURLY = 0x40003,
+        BRACKET_LSQUARE = 0x40004,
+        BRACKET_RSQUARE = 0x40005,
+
+        NEWLINE_TERM = 0x50000,
+        STATEMENT_TERM = 0x50001,
+        STREAM_TERM = 0x50002
     }
 
     struct Token
@@ -88,6 +87,14 @@ namespace Foundations
         public int lino;
         public int chno;
         public object data;
+
+        public const uint CategoryLimit = 0xFFFF;
+        public const uint UncategorizedBase = 0x00000;
+        public const uint OperatorBase = 0x10000;
+        public const uint TypeBase = 0x20000;
+        public const uint ValueBase = 0x30000;
+        public const uint BracketBase = 0x40000;
+        public const uint StatementTermBase = 0x50000;
 
         public Token(TokenType t, int ln, int cn, object obj)
         {
@@ -114,7 +121,7 @@ namespace Foundations
          * Note: These delimiters must be ordered by descending length.
          */
 
-        public TokenType[] DelimiterTypes = {
+        public static TokenType[] DelimiterTypes = {
             TokenType.OP_LSHIFT_ASGN, TokenType.OP_RSHIFT_ASGN,
             TokenType.OP_PLUS_ASGN, TokenType.OP_MINUS_ASGN,
             TokenType.OP_MULT_ASGN, TokenType.OP_DIV_ASGN, TokenType.OP_MOD_ASGN,
@@ -129,10 +136,11 @@ namespace Foundations
             TokenType.OP_DIV, TokenType.OP_MULT, TokenType.OP_MOD,
             TokenType.OP_DEFN, TokenType.OP_MINUS, TokenType.OP_PLUS, TokenType.OP_ASGN,
             TokenType.BRACKET_LSQUARE, TokenType.BRACKET_LPAREN, TokenType.BRACKET_LCURLY,
-            TokenType.BRACKET_RSQUARE, TokenType.BRACKET_RPAREN, TokenType.BRACKET_RCURLY
+            TokenType.BRACKET_RSQUARE, TokenType.BRACKET_RPAREN, TokenType.BRACKET_RCURLY,
+            TokenType.OP_DEREF
         };
 
-        public string[] DelimiterStrings = {
+        public static string[] DelimiterStrings = {
             "<<=", ">>=",
             "+=", "-=",
             "*=", "/=", "%=",
@@ -147,23 +155,22 @@ namespace Foundations
             "/", "*", "%",
             ":", "-", "+", "=",
             "[", "(", "{",
-            "]", ")", "}"
+            "]", ")", "}",
+            "#"
         };
 
         /*
          * Note: These keywords can be in any order, unlike delimiters.
          */
 
-        public TokenType[] KeywordTypes = {
+        public static TokenType[] KeywordTypes = {
             TokenType.OP_DECIDES,
-            TokenType.OP_LOGNOT, TokenType.OP_LOGAND, TokenType.OP_LOGXOR, TokenType.OP_LOGOR,
             TokenType.TYPE_UINT, TokenType.TYPE_U64, TokenType.TYPE_U32, TokenType.TYPE_U16, TokenType.TYPE_U8,
             TokenType.TYPE_INT, TokenType.TYPE_S64, TokenType.TYPE_S32, TokenType.TYPE_S16, TokenType.TYPE_S8
         };
 
-        public string[] KeywordStrings = {
+        public static string[] KeywordStrings = {
             "decides", 
-            "not", "and", "xor", "or",
             "uint", "u64", "u32", "u16", "u8",
             "int", "s64", "s32", "s16", "s8"
         };
@@ -259,7 +266,7 @@ namespace Foundations
 
         public char LexLineSep()
         {
-            Token newToken = new Token(TokenType.NEWLINE, this.currLino, this.currChno, null);
+            Token newToken = new Token(TokenType.NEWLINE_TERM, this.currLino, this.currChno, null);
             this.tokens.Add(newToken);
             this.EatChar();
             return this.PeekChar();
@@ -275,10 +282,10 @@ namespace Foundations
 
         public char LexDelimiter(int index)
         {
-            Token newToken = new Token(this.DelimiterTypes[index], this.currLino, this.currChno, null);
+            Token newToken = new Token(Lexer.DelimiterTypes[index], this.currLino, this.currChno, null);
             this.tokens.Add(newToken);
 
-            for (int i = 0; i < this.DelimiterStrings[index].Length; i++)
+            for (int i = 0; i < Lexer.DelimiterStrings[index].Length; i++)
             {
                 this.EatChar();
             }
@@ -292,7 +299,7 @@ namespace Foundations
             int kwIndex;
             StringBuilder build = new StringBuilder();
 
-            Token newToken = new Token(TokenType.IDENTIFIER, this.currLino, this.currChno, null);
+            Token newToken = new Token(TokenType.VAL_IDENTIFIER, this.currLino, this.currChno, null);
 
             while (currChar == '_' || Char.IsLetterOrDigit(currChar))
             {
@@ -303,9 +310,9 @@ namespace Foundations
 
 
             string finalStr = build.ToString();
-            if ((kwIndex = Array.IndexOf(this.KeywordStrings, finalStr)) >= 0)
+            if ((kwIndex = Array.IndexOf(Lexer.KeywordStrings, finalStr)) >= 0)
             {
-                newToken.type = this.KeywordTypes[kwIndex];
+                newToken.type = Lexer.KeywordTypes[kwIndex];
             }
             else
             {
@@ -323,7 +330,7 @@ namespace Foundations
             int radix = 10;
             int digit;
 
-            Token newToken = new Token(TokenType.NUM_UINT64, this.currLino, this.currChno, null);
+            Token newToken = new Token(TokenType.VAL_UINT64, this.currLino, this.currChno, null);
 
             if (currChar == '0')
             {
@@ -483,19 +490,19 @@ namespace Foundations
                     tryFloat32 = (float)tryFloat64;
                     if (tryFloat32 == tryFloat64)
                     {
-                        newToken.type = TokenType.NUM_FLOAT32;
+                        newToken.type = TokenType.VAL_FLOAT32;
                         newToken.data = tryFloat32;
                     }
                     else
                     {
-                        newToken.type = TokenType.NUM_FLOAT64;
+                        newToken.type = TokenType.VAL_FLOAT64;
                         newToken.data = tryFloat64;
                     }
                     this.tokens.Add(newToken);
                 }
                 catch (OverflowException)
                 {
-                    newToken.type = TokenType.NUM_FLOAT64;
+                    newToken.type = TokenType.VAL_FLOAT64;
                     newToken.data = Double.MaxValue;
                     this.tokens.Add(newToken);
                     this.errs.Add(new Danger(newToken.lino, newToken.chno, Danger.WFLOAT_OVFLOW_SEV, Danger.WFLOAT_OVFLOW_NUM, "Float here overflowed. Defaulting to FLOAT64_MAX."));
@@ -544,7 +551,7 @@ namespace Foundations
             char quote = this.EatChar();
             char currChar = this.PeekChar();
             StringBuilder builder = new StringBuilder();
-            Token newToken = new Token(TokenType.STRING, this.currLino, this.currChno, null);
+            Token newToken = new Token(TokenType.VAL_STRING, this.currLino, this.currChno, null);
 
             while (currChar != quote)
             {
@@ -647,7 +654,7 @@ namespace Foundations
                 {
                     currChar = this.LexStatementTerm();
                 }
-                else if ((index = this.StartsWithIndex(this.DelimiterStrings)) >= 0)
+                else if ((index = this.StartsWithIndex(Lexer.DelimiterStrings)) >= 0)
                 {
                     currChar = this.LexDelimiter(index);
                 }
@@ -672,7 +679,7 @@ namespace Foundations
                 }
             }
 
-            this.tokens.Add(new Token(TokenType.TERM, this.currLino, this.currChno, null));
+            this.tokens.Add(new Token(TokenType.STREAM_TERM, this.currLino, this.currChno, null));
         }
     }
 }

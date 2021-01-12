@@ -1,0 +1,67 @@
+Higher numbers have more precedence
+
+11 (LR Associative)
+
+  ()  Function call
+  []  Array subscripts
+  .  Dot operator
+
+10 (LR Associative)
+
+  !  Postfix address operator
+  #  Postfix dereference operator
+
+9 (RL Associative)
+
+  ~ Bitwise/Logical NOT
+  + Unary plus
+  - Unary minus
+
+8 (LR associative)
+
+  *  Multiplication
+  /  Division
+  %  Modulus
+
+7 (LR associative)
+
+  + Addition
+  - Subtraction
+
+6 (LR associative)
+
+  << Binary left shift
+  >> Binary right shift
+
+5 (LR associative)
+
+  < Less than
+  > Greater than
+  <= Less than or equal
+  >= Greater than or equal
+  == Equals
+  != Not equals
+
+4 (LR associative)
+
+  & Bitwise/Logical AND
+
+3 (LR associative)
+
+  ^ Bitwise/Logical XOR
+
+2 (LR associative)
+
+  | Bitwise/Logical OR
+
+1 (LR associative)
+
+  , Comma (return values, array literals, struct literals, etc.)
+
+0 (RL associative)
+
+  ? Ternary conditional (X = cond ? Y : Z)
+  : Prefix declaration (X :: Y)
+  = Prefix assignment (X := Y)
+  : Binary declaration/Ternary conditional (X: int = Y)
+  = Binary assignment (X = Y)

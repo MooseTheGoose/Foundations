@@ -84,10 +84,12 @@
     <None Include=".vs\foundations\v16\Server\sqlite3\storage.ide" />
     <None Include=".vs\test\v16\.suo" />
     <None Include="README.md" />
+    <None Include="testparseexpr.fnd" />
     <None Include="testlexer.fnd" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="FoundationsExamples.txt" />
+    <Content Include="OperatorPrecedences.txt" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Danger.cs" />

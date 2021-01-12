@@ -21,8 +21,13 @@ namespace Foundations
         public const int EESCAPE_PARSE_NUM = 0x1005;
         public const int EUNRECOGNIZABLE_CHAR_NUM = 0x1006;
 
-        public const int WFLOAT_OVFLOW_NUM = 0x1000;
-        public const int WINTEGER_OVFLOW_NUM = 0x1001;
+        public const int EOPERATOR_EXPECTED = 0x1007;
+        public const int EBINOP_EXPECTED = 0x1008;
+        public const int EPREOP_EXPECTED = 0x1009;
+        public const int EPOSTOP_EXPECTED = 0x100A;
+
+        public const int WFLOAT_OVFLOW_NUM = 0x2000;
+        public const int WINTEGER_OVFLOW_NUM = 0x2001;
 
         public const int WFLOAT_OVFLOW_SEV = 0x1000;
         public const int WINTEGER_OVFLOW_SEV = 0x1000;
